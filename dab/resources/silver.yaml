@@ -1,0 +1,9 @@
+resources:
+    jobs:
+        job_silver_transformation:
+            name: job_silver_transformation
+
+            tasks:
+                - task_key: run_silver_pipeline
+                  pipeline_task:
+                    pipeline_id: ${resources.pipelines.pl_silver_transformation.id}

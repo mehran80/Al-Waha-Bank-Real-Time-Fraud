@@ -1,0 +1,11 @@
+resources:
+    pipelines:
+        pl_gold_transformation
+            name: pl_gold_transformation
+            catalog: ${var.catalog}
+            schema: gold
+            root_path: ../databricks/pl_gold_transformation
+
+            libraries:
+                -glob:
+                    include: ../databricks/pl_gold_transformation/transformations/**
