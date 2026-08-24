@@ -1,0 +1,14 @@
+project_name = "ALWaha-Banking"
+
+environment = "dev"
+
+location = "East US"
+
+subscription_id = "YOUR-AZURE-SUBSCRIPTION-ID"
+
+tags = {
+  project     = "AlWaha-banking"
+  environment = "development"
+  ManagedBy   = "Terraform"
+  Domain      = "Fraud-AML"
+}
