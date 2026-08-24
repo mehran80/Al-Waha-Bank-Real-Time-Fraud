@@ -1,0 +1,11 @@
+{
+	"name": "ls_adls",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://alwahabankingdev001.dfs.core.windows.net/"
+		},
+		"annotations": []
+	}
+}
