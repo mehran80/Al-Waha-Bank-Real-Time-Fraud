@@ -1,0 +1,11 @@
+resources:
+    pipelines:
+        pl_silver_transformation:
+            name: pl_silver_transformation
+            catalog: ${var.catalog}
+            schema: silver
+            root_path: ../databricks/pl_silver_transformation
+
+            libraries:
+                - glob:
+                    include: ../databricks/pl_silver_transformation/transformations/**
