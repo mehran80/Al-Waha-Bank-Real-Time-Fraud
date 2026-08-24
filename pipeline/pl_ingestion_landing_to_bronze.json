@@ -1,0 +1,358 @@
+{
+	"name": "pl_ingestion_landing_to_bronze",
+	"properties": {
+		"activities": [
+			{
+				"name": "lk_read_control_table",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_control_table",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "fe_loop_sources",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "lk_read_control_table",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('lk_read_control_table').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If_file_exists",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "get_file_metadata",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@greater(length(activity('get_file_metadata').output.childItems), 0)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "cp_landing_to_bronze",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "BinarySource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "@item().source_folder",
+														"type": "Expression"
+													},
+													"wildcardFileName": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													},
+													"deleteFilesAfterCompletion": false
+												},
+												"formatSettings": {
+													"type": "BinaryReadSettings"
+												}
+											},
+											"sink": {
+												"type": "BinarySink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_generic_binary",
+												"type": "DatasetReference",
+												"parameters": {
+													"p_container_name": "landing",
+													"p_directory_name": {
+														"value": "@item().source_folder",
+														"type": "Expression"
+													},
+													"p_file_name": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "ds_generic_binary",
+												"type": "DatasetReference",
+												"parameters": {
+													"p_container_name": "bronze",
+													"p_directory_name": {
+														"value": "@concat('raw_files/',item().source_folder)",
+														"type": "Expression"
+													},
+													"p_file_name": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "cp_archive_files",
+										"type": "Copy",
+										"dependsOn": [
+											{
+												"activity": "cp_landing_to_bronze",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "BinarySource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "@item().source_folder",
+														"type": "Expression"
+													},
+													"wildcardFileName": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													},
+													"deleteFilesAfterCompletion": true
+												},
+												"formatSettings": {
+													"type": "BinaryReadSettings"
+												}
+											},
+											"sink": {
+												"type": "BinarySink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_generic_binary",
+												"type": "DatasetReference",
+												"parameters": {
+													"p_container_name": "landing",
+													"p_directory_name": {
+														"value": "@item().source_folder",
+														"type": "Expression"
+													},
+													"p_file_name": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "ds_generic_binary",
+												"type": "DatasetReference",
+												"parameters": {
+													"p_container_name": "landing",
+													"p_directory_name": {
+														"value": "@concat('archieve/', item().source_folder, '/', formatDateTime(utcNow(), 'yyyy/MM/dd'))",
+														"type": "Expression"
+													},
+													"p_file_name": {
+														"value": "@item().source_file",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"name": "get_file_metadata",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ds_generic_binary",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_container_name": "landing",
+										"p_directory_name": {
+											"value": "@item().source_folder",
+											"type": "Expression"
+										},
+										"p_file_name": {
+											"value": "@json('null')",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "nb_raw_to_bronze_delta_tables",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "fe_loop_sources",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Workspace/Users/mehran8023@gmail.com/alwaha_bank_lakehouse/01_bronze/01_ingest_raw_batch_to_bronze",
+					"baseParameters": {
+						"p_adf_run_id": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"p_storage_account": {
+							"value": "alwahabankingdev001",
+							"type": "Expression"
+						},
+						"p_container_name": {
+							"value": "bronze",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_adb",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "nb_ingestion_card_swipes",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "nb_raw_to_bronze_delta_tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "/Workspace/Users/mehran8023@gmail.com/alwaha_bank_lakehouse/01_bronze/02_ingest_streaming_swipes_autoloader",
+						"type": "Expression"
+					},
+					"baseParameters": {
+						"p_adf_run_id": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_adb",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-08-13T12:55:33Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

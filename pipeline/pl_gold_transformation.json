@@ -1,0 +1,30 @@
+{
+	"name": "pl_gold_transformation",
+	"properties": {
+		"activities": [
+			{
+				"name": "Job_gold_transformation",
+				"type": "DatabricksJob",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"jobId": "960096717253863"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_adb",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-08-23T22:09:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
