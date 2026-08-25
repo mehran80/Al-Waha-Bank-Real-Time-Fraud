@@ -48,6 +48,15 @@ resource "azurerm_data_factory" "adf" {
     identity {
         type = "SystemAssigned"
     }
+
+    github_configuration {
+        account_name       = "mehran80"
+        branch_name        = "main"
+        git_url             = "https://github.com"
+        publishing_enabled = true
+        repository_name    = "Al-Waha-Bank-Real-Time-Fraud"
+        root_folder        = "/adf"
+    }
 }
 
 #6. AZURE ADF KEY VAULT 
@@ -141,6 +150,12 @@ resource "databricks_schema" "schema" {
     name = each.value
 }
 
+#2.1 MONITORING SCHEMA
+resource "databricks_schema" "monitoring" {
+    catalog_name = databricks_catalog.catalog.name
+    name         = "monitoring"
+}
+
 #-------------------------------------------------------
 #     Unity  Catalog Permissions
 #-------------------------------------------------------
@@ -176,6 +191,23 @@ resource "databricks_grants" "schema_grants" {
     principal  = "account users"
     privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
   }
+  depends_on = [
+        databricks_schema.schema
+    ]
+}
+
+#3.1 GRANTING PERMISSION TO MONITORING SCHEMA
+
+resource "databricks_grants" "monitoring_schema_grants" {
+  schema = "${databricks_catalog.catalog.name}.monitoring"
+
+  grant {
+    principal  = "account users"
+    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
+  }
+  depends_on = [
+        databricks_schema.monitoring
+    ]
 }
 
 #4. Granting permission For Storage Credential
