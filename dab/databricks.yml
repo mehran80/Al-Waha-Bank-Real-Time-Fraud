@@ -5,7 +5,12 @@ bundle:
   uuid: 002fe9c3-279d-41f5-8b92-a928cc2ba6f5
 
 include:
-  - resources/*.yml
+  - resources/*.yaml
+
+sync:
+  paths:
+    - ../databricks
+    - .
 
 # Variable declarations. These variables are assigned in the dev/prod targets below.
 variables:

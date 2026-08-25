@@ -48,6 +48,15 @@ resource "azurerm_data_factory" "adf" {
     identity {
         type = "SystemAssigned"
     }
+
+    github_configuration {
+        account_name       = "mehran80"
+        branch_name        = "main"
+        git_url             = "https://github.com"
+        publishing_enabled = true
+        repository_name    = "Al-Waha-Bank-Real-Time-Fraud"
+        root_folder        = "/adf"
+    }
 }
 
 #6. AZURE ADF KEY VAULT 
@@ -121,7 +130,7 @@ resource "databricks_storage_credential" "storage_credential" {
 
 #3. EXTERNAL LOCATION
 resource "databricks_external_location" "external_location" {
-    for_each = toset((["landing", "bronze", "silver", "gold"]))
+    for_each = toset((["landing", "bronze"]))
     name = "ext_loc_${each.value}"
     url = "abfss://${each.value}@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
     credential_name = databricks_storage_credential.storage_credential.id
@@ -132,15 +141,19 @@ resource "databricks_external_location" "external_location" {
 resource "databricks_catalog" "catalog"{
     name = lower(replace("${var.project_name}_${var.environment}_001", "-", "_"))
     comment = "Unity Catalog for ${var.project_name} ${var.environment}"
-    storage_root = databricks_external_location.external_location["landing"].url
 }
 
 #2. SCHEMA
 resource "databricks_schema" "schema" {
-    for_each = toset((["landing", "bronze", "silver", "gold"]))
+    for_each = toset((["bronze", "silver", "gold", "monitoring"]))
     catalog_name = databricks_catalog.catalog.name
     name = each.value
-    storage_root = databricks_external_location.external_location[each.key].url
+}
+
+#2.1 MONITORING SCHEMA
+resource "databricks_schema" "monitoring" {
+    catalog_name = databricks_catalog.catalog.name
+    name         = "monitoring"
 }
 
 #-------------------------------------------------------
@@ -159,7 +172,7 @@ resource "databricks_grants" "catalog_grants" {
 
 #2. Granting Permission to external location to access the catalog
 resource "databricks_grants" "external_location_grants" {
-  for_each          = toset(["landing", "bronze", "silver", "gold"])
+  for_each          = toset(["landing", "bronze"])
   external_location = databricks_external_location.external_location[each.key].id
 
   grant {
@@ -171,13 +184,30 @@ resource "databricks_grants" "external_location_grants" {
 #3. Granting Permission to account users to access the schema
 
 resource "databricks_grants" "schema_grants" {
-  for_each = toset(["landing", "bronze", "silver", "gold"])
+  for_each = toset(["bronze", "silver", "gold", "monitoring"])
   schema   = "${databricks_catalog.catalog.name}.${each.key}"
 
   grant {
     principal  = "account users"
     privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
   }
+  depends_on = [
+        databricks_schema.schema
+    ]
+}
+
+#3.1 GRANTING PERMISSION TO MONITORING SCHEMA
+
+resource "databricks_grants" "monitoring_schema_grants" {
+  schema = "${databricks_catalog.catalog.name}.monitoring"
+
+  grant {
+    principal  = "account users"
+    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
+  }
+  depends_on = [
+        databricks_schema.monitoring
+    ]
 }
 
 #4. Granting permission For Storage Credential

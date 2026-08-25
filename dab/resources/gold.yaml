@@ -1,10 +1,8 @@
 resources:
-    jobs:
-        job_gold_transformation:
-            name = job_gold_transformation
-
-
-            tasks:
-                - task: run_gold_pipeline
-                  pipeline_task:
-                    pipeline_id: ${resources.pipelines.pl_gold_transformation.id}
+  jobs:
+    job_gold_transformation:
+      name: job_gold_transformation
+      tasks:
+        - task_key: run_gold_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pl_gold_transformation.id}

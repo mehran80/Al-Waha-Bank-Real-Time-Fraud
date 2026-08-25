@@ -7,8 +7,8 @@ resources:
             tasks:
                 - task_key: bronze_batch_ingestion
                   notebook_task:
-                  notebook_path: ../databricks/01_ingest_raw_batch_to_bronze.ipynb
+                    notebook_path: ../../databricks/bronze/01_ingest_raw_batch_to_bronze.ipynb
 
                 - task_key: bronze_streaming_ingestion
                   notebook_task:
-                    notebook_path: ../databricks/bronze/02_ingest_streaming_swipes_autoloader.ipynb
+                    notebook_path: ../../databricks/bronze/02_ingest_streaming_swipes_autoloader.ipynb
