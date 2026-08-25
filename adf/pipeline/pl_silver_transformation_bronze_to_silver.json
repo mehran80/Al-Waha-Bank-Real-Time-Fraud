@@ -15,10 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"jobId": {
-						"value": "831783601583789",
-						"type": "Expression"
-					}
+					"jobId": "551117015152038"
 				},
 				"linkedServiceName": {
 					"referenceName": "ls_adb",
