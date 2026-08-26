@@ -4,7 +4,7 @@ variable "project_name" {
 }
 
 variable "environment" {
-  type = string
+  type = list(string)
   description = "The environment of the project."
 }
 
