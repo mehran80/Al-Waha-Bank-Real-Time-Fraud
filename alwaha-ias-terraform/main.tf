@@ -6,14 +6,14 @@ data "azurerm_client_config" "current" {}
 
 #1. Resource Group
 resource "azurerm_resource_group" "rg"{
-    name = lower("${var.project_name}-${var.environment}-rg")
+    name = lower("${var.project_name}-${var.environment[0]}-rg")
     location = var.location
     tags = var.tags
 }
 
 #2. ADLS GEN2 STOAGE ACCOUNT
 resource "azurerm_storage_account" "adls" {
-    name = lower(replace("${var.project_name}${var.environment}001", "-", ""))
+    name = lower(replace("${var.project_name}${var.environment[0]}001", "-", ""))
     resource_group_name = azurerm_resource_group.rg.name
     location = azurerm_resource_group.rg.location
     account_tier = "Standard"
@@ -32,7 +32,7 @@ resource "azurerm_storage_container" "adls_container" {
 
 #4. AZURE KEY VAULT
 resource "azurerm_key_vault" "akv" {
-    name = lower("${replace(var.project_name, "-", "")}-${var.environment}")
+    name = lower("${replace(var.project_name, "-", "")}-${var.environment[0]}")
     location = azurerm_resource_group.rg.location
     resource_group_name = azurerm_resource_group.rg.name
     tenant_id = data.azurerm_client_config.current.tenant_id
@@ -41,7 +41,7 @@ resource "azurerm_key_vault" "akv" {
 
 #5. AZURE DATA FACTORY
 resource "azurerm_data_factory" "adf" {
-    name = lower("adf-${var.project_name}-${var.environment}-001")
+    name = lower("adf-${var.project_name}-${var.environment[0]}-001")
     location = azurerm_resource_group.rg.location
     resource_group_name = azurerm_resource_group.rg.name
 
@@ -76,7 +76,7 @@ resource "azurerm_role_assignment" "adf_to_storage" {
 
 #8. ACCESS CONNECTOR FOR AZURE DATABRICKS WORKSPACE
 resource "azurerm_databricks_access_connector" "db_access_connector" {
-    name = lower("dbac-${var.project_name}-${var.environment}-001")
+    name = lower("dbac-${var.project_name}-${var.environment[0]}-001")
     resource_group_name = azurerm_resource_group.rg.name
     location = azurerm_resource_group.rg.location
 
@@ -95,7 +95,7 @@ resource "azurerm_role_assignment" "db_access_connector_to_storage" {
 
 #10. AZURE DATABRICKS WORKSPACE
 resource "azurerm_databricks_workspace" "db_ws" {
-    name = lower("dbw-${var.project_name}-${var.environment}-001")
+    name = lower("dbw-${var.project_name}-${var.environment[0]}-001")
     location = azurerm_resource_group.rg.location
     resource_group_name = azurerm_resource_group.rg.name
     sku = "premium"
@@ -125,6 +125,7 @@ provider "databricks" {
     azure_tenant_id = data.azurerm_client_config.current.tenant_id
 }
 
+
 #-------------------------------------------------
 # DATABRICKS ACCOUNT-LEVEL GROUPS
 #-------------------------------------------------
@@ -141,9 +142,88 @@ resource "databricks_group" "compliance_officer" {
   
 }
 
+resource "databricks_group" "data_engineers" {
+    provider =  databricks.account
+    display_name =  "data_engineers"
+  
+}
+
+resource "databricks_group" "pipeline_service" {
+    provider = databricks.account
+    display_name = "pipeline_service"
+  
+}
+
+#-------------------------------------------------
+# DATABRICKS MWS PERMISSION ASSIGNMENT
+#-------------------------------------------------
+
+resource "databricks_mws_permission_assignment" "analyst_to_workspace" {
+    provider = databricks.account
+    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id = databricks_group.analyst.id
+    permissions = ["USER"]
+  
+}
+
+resource "databricks_mws_permission_assignment" "compliance_to_workspace" {
+    provider = databricks.account
+    workspace_id =  azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id = databricks_group.compliance_officer.id
+    permissions = ["USER"]
+  
+}
+
+resource "databricks_mws_permission_assignment" "data_engineers_to_workspace" {
+    provider = databricks.account
+    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id = databricks_group.data_engineers.id
+    permissions = ["USER"]
+}
+
+resource "databricks_mws_permission_assignment" "pipeline_service_to_workspace" {
+    provider = databricks.account
+    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id =  databricks_group.pipeline_service.id
+    permissions = ["USER"]
+  
+}
+
+#-------------------------------------------------
+# ADDING USERS IN GROUPS
+#-------------------------------------------------
+
+data "databricks_user" "ali_baloch" {
+
+    user_name = "mehran8023@gmail.com"
+  
+}
+
+data "databricks_service_principal" "adf_alwaha_service_principal" {
+    application_id = "5c696b18-3112-42e5-95d4-9294ac7b22d3"
+  
+}
+
+
+
+resource "databricks_group_member" "ali_in_engineers" {
+    provider = databricks.account
+    group_id = databricks_group.data_engineers.id
+    member_id = data.databricks_user.ali_baloch.id
+  
+}
+
+resource "databricks_group_member" "adf_in_pipeline" {
+    provider = databricks.account
+    group_id = databricks_group.pipeline_service.id
+    member_id = data.databricks_service_principal.adf_alwaha_service_principal.id
+}
+
+
+
 #1. STORAGE CREDENTIAL
 resource "databricks_storage_credential" "storage_credential" {
-    name = lower(replace("${var.project_name}_${var.environment}_storage_credential", "-", "_"))
+    name = lower(replace("${var.project_name}_${var.environment[0]}_storage_credential", "-", "_"))
     comment = "Storage Credential using Access Connector Managed Identity"
     azure_managed_identity {
         access_connector_id = azurerm_databricks_access_connector.db_access_connector.id
@@ -162,8 +242,8 @@ resource "databricks_external_location" "external_location" {
 
 #4. UNITY CATALOG
 resource "databricks_catalog" "catalog"{
-    name = lower(replace("${var.project_name}_${var.environment}_001", "-", "_"))
-    comment = "Unity Catalog for ${var.project_name} ${var.environment}"
+    name = lower(replace("${var.project_name}_${var.environment[0]}_001", "-", "_"))
+    comment = "Unity Catalog for ${var.project_name} ${var.environment[0]}"
     storage_root = "abfss://landing@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
 }
 
@@ -181,55 +261,95 @@ resource "databricks_schema" "schema" {
     
 }
 
-#-------------------------------------------------------
-#     Unity  Catalog Permissions
-#-------------------------------------------------------
+#-------------------------------------------------
+# DATABRICKS GROUP PERMISSIONA GRANTS
+#-------------------------------------------------
 
-#1. Granting Permission to account users to access the catalog
 resource "databricks_grants" "catalog_grants" {
   catalog = databricks_catalog.catalog.name
 
   grant {
     principal  = "account users"
-    privileges = ["ALL_PRIVILEGES"]
+    privileges = ["USE_CATALOG"]
   }
 }
-
-#2. Granting Permission to external location to access the catalog
-resource "databricks_grants" "external_location_grants" {
-  for_each          = toset(["landing", "bronze","silver", "gold", "monitoring"])
-  external_location = databricks_external_location.external_location[each.key].id
-
-  grant {
-    principal  = "account users"
-    privileges = ["READ_FILES", "WRITE_FILES", "CREATE_EXTERNAL_TABLE", "CREATE_EXTERNAL_VOLUME"]
-  }
-}
-
-#3. Granting Permission to account users to access the schema
 
 resource "databricks_grants" "schema_grants" {
-  for_each = toset(["landing","bronze", "silver", "gold", "monitoring"])
-  schema   = "${databricks_catalog.catalog.name}.${each.key}"
+    for_each = databricks_schema.schema
+    schema   = each.value.id
 
-  grant {
-    principal  = "account users"
-    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
-  }
-  depends_on = [
-        databricks_schema.schema
+    depends_on = [
+        databricks_grants.catalog_grants
     ]
+
+    dynamic "grant" {
+        for_each = contains(["gold"], each.key) ? [1] : []
+        content {
+          principal  = databricks_group.analyst.display_name
+          privileges = ["SELECT"]
+        }
+    }
+
+    dynamic "grant" {
+        for_each = contains(["silver", "gold"], each.key) ? [1] : []
+        content {
+          principal  = databricks_group.compliance_officer.display_name
+          privileges = ["SELECT"]
+        }
+    }
+
+    dynamic "grant" {
+        for_each = contains(["landing","bronze","silver", "gold", "monitoring"], each.key) ? [1] : []
+        content {
+          principal  = databricks_group.data_engineers.display_name
+          privileges = ["SELECT", "MODIFY", "CREATE_TABLE", "CREATE_FUNCTION", "USE_SCHEMA"]
+        }
+    }
+
+    dynamic "grant" {
+        for_each = contains(["landing","bronze", "silver", "gold", "monitoring"], each.key) ? [1] : []
+        content {
+          principal  = databricks_group.pipeline_service.display_name
+          privileges = ["SELECT", "MODIFY", "CREATE_TABLE"]
+        }
+    }
 }
 
-#4. Granting permission For Storage Credential
+#-------------------------------------------------------
+#     Unity  Catalog Permissions
+#-------------------------------------------------------
+resource "databricks_grants" "externel_location_grant" {
+    for_each = toset(["landing", "bronze", "silver", "gold", "monitoring"])
+    external_location = databricks_external_location.external_location[each.key].id
 
-resource "databricks_grants" "storage_credential_grants" {
-  storage_credential = databricks_storage_credential.storage_credential.id
+    depends_on = [
+        databricks_grants.schema_grants
+    ]
 
-  grant {
-    principal  = "account users"
-    privileges = ["CREATE_EXTERNAL_LOCATION", "READ_FILES", "WRITE_FILES"]
-  }
+    grant {
+      principal = databricks_group.data_engineers.display_name
+      privileges = ["READ_FILES", "WRITE_FILES", "CREATE_EXTERNAL_TABLE", "CREATE_EXTERNAL_VOLUME"]
+    }
+
+    grant {
+      principal = databricks_group.pipeline_service.display_name
+      privileges = ["READ_FILES", "WRITE_FILES", "CREATE_EXTERNAL_TABLE"]
+    }
+  
+}
+
+resource "databricks_grants" "storage_credential_grant" {
+    storage_credential = databricks_storage_credential.storage_credential.id
+
+    depends_on = [
+        databricks_grants.schema_grants
+    ]
+
+    grant {
+      principal = databricks_group.data_engineers.display_name
+      privileges = ["CREATE_EXTERNAL_LOCATION", "READ_FILES", "WRITE_FILES"]
+    }
+  
 }
 
 #-------------------------------------------------------
