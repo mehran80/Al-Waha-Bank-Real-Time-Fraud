@@ -24,7 +24,7 @@ resource "azurerm_storage_account" "adls" {
 #3. AZURE STORAGE CONTAINER
 
 resource "azurerm_storage_container" "adls_container" {
-    for_each = toset((["landing", "bronze", "silver", "gold"]))
+    for_each = toset((["landing", "bronze", "silver", "gold", "monitoring"]))
     name  = each.value
     storage_account_name = azurerm_storage_account.adls.name
     container_access_type = "private"
@@ -118,6 +118,29 @@ provider "databricks" {
     host = azurerm_databricks_workspace.db_ws.workspace_url
 }
 
+provider "databricks" {
+    alias = "account"
+    host = "https://accounts.azuredatabricks.net"
+    account_id = var.databricks_account_id
+    azure_tenant_id = data.azurerm_client_config.current.tenant_id
+}
+
+#-------------------------------------------------
+# DATABRICKS ACCOUNT-LEVEL GROUPS
+#-------------------------------------------------
+
+resource "databricks_group" "analyst" {
+    provider = databricks.account
+    display_name = "analyst"
+  
+}
+
+resource "databricks_group" "compliance_officer" {
+    provider = databricks.account
+    display_name = "compliance_officer"
+  
+}
+
 #1. STORAGE CREDENTIAL
 resource "databricks_storage_credential" "storage_credential" {
     name = lower(replace("${var.project_name}_${var.environment}_storage_credential", "-", "_"))
@@ -130,7 +153,7 @@ resource "databricks_storage_credential" "storage_credential" {
 
 #3. EXTERNAL LOCATION
 resource "databricks_external_location" "external_location" {
-    for_each = toset((["landing", "bronze"]))
+    for_each = toset((["landing", "bronze", "silver", "gold", "monitoring"]))
     name = "ext_loc_${each.value}"
     url = "abfss://${each.value}@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
     credential_name = databricks_storage_credential.storage_credential.id
@@ -141,19 +164,21 @@ resource "databricks_external_location" "external_location" {
 resource "databricks_catalog" "catalog"{
     name = lower(replace("${var.project_name}_${var.environment}_001", "-", "_"))
     comment = "Unity Catalog for ${var.project_name} ${var.environment}"
+    storage_root = "abfss://landing@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
 }
 
 #2. SCHEMA
 resource "databricks_schema" "schema" {
-    for_each = toset((["bronze", "silver", "gold", "monitoring"]))
+    for_each = toset((["landing","bronze", "silver", "gold", "monitoring"]))
     catalog_name = databricks_catalog.catalog.name
     name = each.value
-}
 
-#2.1 MONITORING SCHEMA
-resource "databricks_schema" "monitoring" {
-    catalog_name = databricks_catalog.catalog.name
-    name         = "monitoring"
+    storage_root = "abfss://${each.value}@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
+
+    lifecycle {
+        ignore_changes = [storage_root]
+    }
+    
 }
 
 #-------------------------------------------------------
@@ -172,7 +197,7 @@ resource "databricks_grants" "catalog_grants" {
 
 #2. Granting Permission to external location to access the catalog
 resource "databricks_grants" "external_location_grants" {
-  for_each          = toset(["landing", "bronze"])
+  for_each          = toset(["landing", "bronze","silver", "gold", "monitoring"])
   external_location = databricks_external_location.external_location[each.key].id
 
   grant {
@@ -184,7 +209,7 @@ resource "databricks_grants" "external_location_grants" {
 #3. Granting Permission to account users to access the schema
 
 resource "databricks_grants" "schema_grants" {
-  for_each = toset(["bronze", "silver", "gold", "monitoring"])
+  for_each = toset(["landing","bronze", "silver", "gold", "monitoring"])
   schema   = "${databricks_catalog.catalog.name}.${each.key}"
 
   grant {
@@ -193,20 +218,6 @@ resource "databricks_grants" "schema_grants" {
   }
   depends_on = [
         databricks_schema.schema
-    ]
-}
-
-#3.1 GRANTING PERMISSION TO MONITORING SCHEMA
-
-resource "databricks_grants" "monitoring_schema_grants" {
-  schema = "${databricks_catalog.catalog.name}.monitoring"
-
-  grant {
-    principal  = "account users"
-    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY"]
-  }
-  depends_on = [
-        databricks_schema.monitoring
     ]
 }
 
