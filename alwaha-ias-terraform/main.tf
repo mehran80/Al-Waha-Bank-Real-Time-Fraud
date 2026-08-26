@@ -125,6 +125,7 @@ provider "databricks" {
     azure_tenant_id = data.azurerm_client_config.current.tenant_id
 }
 
+
 #-------------------------------------------------
 # DATABRICKS ACCOUNT-LEVEL GROUPS
 #-------------------------------------------------
@@ -138,6 +139,26 @@ resource "databricks_group" "analyst" {
 resource "databricks_group" "compliance_officer" {
     provider = databricks.account
     display_name = "compliance_officer"
+  
+}
+
+#-------------------------------------------------
+# DATABRICKS MWS PERMISSION ASSIGNMENT
+#-------------------------------------------------
+
+resource "databricks_mws_permission_assignment" "analyst_to_workspace" {
+    provider = databricks.account
+    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id = databricks_group.analyst.id
+    permissions = ["USER"]
+  
+}
+
+resource "databricks_mws_permission_assignment" "compliance_to_workspace" {
+    provider = databricks.account
+    workspace_id =  azurerm_databricks_workspace.db_ws.workspace_id
+    principal_id = databricks_group.compliance_officer.id
+    permissions = ["USER"]
   
 }
 
