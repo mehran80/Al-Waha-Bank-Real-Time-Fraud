@@ -5,6 +5,8 @@ environment = "dev"
 location = "East US"
 
 subscription_id = "YOUR-AZURE-SUBSCRIPTION-ID"
+databricks_account_id = "<your-databricks-account-id>"
+azure_tenant_id        = "<your-azure-tenant-id>"
 
 tags = {
   project     = "AlWaha-banking"

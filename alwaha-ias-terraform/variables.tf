@@ -22,3 +22,14 @@ variable "subscription_id" {
   type = string
   description = "The subscription ID for the Azure provider."
 }
+
+variable "databricks_account_id" {
+  description = "Account id for databricks"
+  type = string
+}
+
+variable "azure_tenant_id" {
+  type = string
+  description = "tenant id"
+  
+}
