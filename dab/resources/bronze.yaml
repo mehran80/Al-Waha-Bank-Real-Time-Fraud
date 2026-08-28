@@ -12,3 +12,21 @@ resources:
                 - task_key: bronze_streaming_ingestion
                   notebook_task:
                     notebook_path: ../../databricks/bronze/02_ingest_streaming_swipes_autoloader.ipynb
+
+            health:
+              rules:
+                - metric: RUN_DURATION_SECONDS
+                  op: GREATER_THAN
+                  value: 900
+
+            email_notifications:
+              on_failure:
+                - mehran8023@gmail.com
+              on_duration_warning_threshold_exceeded:
+                - mehran8023@gmail.com
+
+            notification_settings:
+              no_alert_for_skipped_runs: false
+              no_alert_for_canceled_runs: false
+
+                
