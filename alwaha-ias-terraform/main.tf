@@ -249,11 +249,11 @@ resource "databricks_catalog" "catalog"{
 
 #2. SCHEMA
 resource "databricks_schema" "schema" {
-    for_each = toset((["landing","bronze", "silver", "gold", "monitoring"]))
+    for_each = toset((["landing","bronze", "silver", "gold", "monitoring", "governance"]))
     catalog_name = databricks_catalog.catalog.name
     name = each.value
 
-    storage_root = "abfss://${each.value}@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
+    storage_root = each.key == "governance" ? null : "abfss://${each.value}@${azurerm_storage_account.adls.name}.dfs.core.windows.net/"
 
     lifecycle {
         ignore_changes = [storage_root]
@@ -299,7 +299,7 @@ resource "databricks_grants" "schema_grants" {
     }
 
     dynamic "grant" {
-        for_each = contains(["landing","bronze","silver", "gold", "monitoring"], each.key) ? [1] : []
+        for_each = contains(["landing","bronze","silver", "gold", "monitoring", "governance"], each.key) ? [1] : []
         content {
           principal  = databricks_group.data_engineers.display_name
           privileges = ["SELECT", "MODIFY", "CREATE_TABLE", "CREATE_FUNCTION", "USE_SCHEMA"]
@@ -307,7 +307,7 @@ resource "databricks_grants" "schema_grants" {
     }
 
     dynamic "grant" {
-        for_each = contains(["landing","bronze", "silver", "gold", "monitoring"], each.key) ? [1] : []
+        for_each = contains(["landing","bronze", "silver", "gold", "monitoring", "governance"], each.key) ? [1] : []
         content {
           principal  = databricks_group.pipeline_service.display_name
           privileges = ["SELECT", "MODIFY", "CREATE_TABLE"]
