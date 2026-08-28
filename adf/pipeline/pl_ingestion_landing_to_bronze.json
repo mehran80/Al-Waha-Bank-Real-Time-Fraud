@@ -301,6 +301,12 @@
 				}
 			}
 		],
+		"concurrency": 1,
+		"policy": {
+			"elapsedTimeMetric": {
+				"duration": "0.00:15:00"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2026-08-13T12:55:33Z"
 	},

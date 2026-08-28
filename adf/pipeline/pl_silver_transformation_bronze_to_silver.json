@@ -23,6 +23,12 @@
 				}
 			}
 		],
+		"concurrency": 1,
+		"policy": {
+			"elapsedTimeMetric": {
+				"duration": "0.00:10:00"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2026-08-23T10:12:09Z"
 	},
