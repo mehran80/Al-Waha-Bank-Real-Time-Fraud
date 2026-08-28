@@ -92,8 +92,11 @@
 						}
 					}
 				],
+				"concurrency": 1,
 				"policy": {
-					"elapsedTimeMetric": {}
+					"elapsedTimeMetric": {
+						"duration": "0.00:40:00"
+					}
 				},
 				"annotations": [],
 				"lastPublishTime": "2026-08-23T22:09:25Z"
@@ -123,7 +126,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"jobId": "960096717253863"
+							"jobId": "181919615306549"
 						},
 						"linkedServiceName": {
 							"referenceName": "ls_adb",
@@ -131,8 +134,11 @@
 						}
 					}
 				],
+				"concurrency": 1,
 				"policy": {
-					"elapsedTimeMetric": {}
+					"elapsedTimeMetric": {
+						"duration": "0.00:10:00"
+					}
 				},
 				"annotations": [],
 				"lastPublishTime": "2026-08-23T22:09:24Z"
@@ -439,10 +445,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"jobId": {
-								"value": "939643731633254",
-								"type": "Expression"
-							}
+							"jobId": "939643731633254"
 						},
 						"linkedServiceName": {
 							"referenceName": "ls_adb",
@@ -450,8 +453,11 @@
 						}
 					}
 				],
+				"concurrency": 1,
 				"policy": {
-					"elapsedTimeMetric": {}
+					"elapsedTimeMetric": {
+						"duration": "0.00:15:00"
+					}
 				},
 				"annotations": [],
 				"lastPublishTime": "2026-08-13T12:55:33Z"
@@ -481,10 +487,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"jobId": {
-								"value": "831783601583789",
-								"type": "Expression"
-							}
+							"jobId": "551117015152038"
 						},
 						"linkedServiceName": {
 							"referenceName": "ls_adb",
@@ -492,8 +495,11 @@
 						}
 					}
 				],
+				"concurrency": 1,
 				"policy": {
-					"elapsedTimeMetric": {}
+					"elapsedTimeMetric": {
+						"duration": "0.00:10:00"
+					}
 				},
 				"annotations": [],
 				"lastPublishTime": "2026-08-23T10:12:09Z"
