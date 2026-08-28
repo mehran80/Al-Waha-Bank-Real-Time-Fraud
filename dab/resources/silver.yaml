@@ -7,3 +7,20 @@ resources:
                 - task_key: run_silver_pipeline
                   pipeline_task:
                     pipeline_id: ${resources.pipelines.pl_silver_transformation.id}
+
+
+            health:
+                rules:
+                    - metric: RUN_DURATION_SECONDS
+                        op: GREATER_THAN
+                        value: 600
+
+            email_notifications:
+                on_failure:
+                    - mehran8023@gmail.com
+                on_duration_warning_exceeded_threshold:
+                    - mehran8023@gmail.com
+            
+            notification_settings:
+                no_alert_for_skipped_runs: false
+                no_alert_for_canceled_runs: false

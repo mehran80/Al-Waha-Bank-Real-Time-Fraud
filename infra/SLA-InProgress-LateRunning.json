@@ -1,0 +1,62 @@
+{
+    "id": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourceGroups/alwaha-banking-dev-rg/providers/microsoft.insights/scheduledqueryrules/SLA-InProgress-LateRunning",
+    "name": "SLA-InProgress-LateRunning",
+    "type": "Microsoft.Insights/scheduledQueryRules",
+    "location": "eastus",
+    "tags": {},
+    "kind": "LogAlert",
+    "systemData": {
+        "createdBy": "mehran****@gmail.com",
+        "createdByType": "User",
+        "createdAt": "2026-08-28T22:12:44.3643751Z",
+        "lastModifiedBy": "mehran****@gmail.com",
+        "lastModifiedByType": "User",
+        "lastModifiedAt": "2026-08-28T22:12:44.3643751Z"
+    },
+    "properties": {
+        "createdWithApiVersion": "2026-03-01",
+        "displayName": "SLA-InProgress-LateRunning",
+        "description": "",
+        "severity": 3,
+        "enabled": true,
+        "evaluationFrequency": "PT5M",
+        "scopes": [
+            "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourceGroups/alwaha-banking-dev-rg/providers/Microsoft.OperationalInsights/workspaces/alwahaloganalyticsworkspacerg"
+        ],
+        "targetResourceTypes": [
+            "Microsoft.OperationalInsights/workspaces"
+        ],
+        "windowSize": "PT5M",
+        "criteria": {
+            "allOf": [
+                {
+                    "query": "ADFPipelineRun\r\n| where Status == \"InProgress\"\r\n| summarize arg_max(TimeGenerated, *) by RunId\r\n| extend RunningMinutes = datetime_diff('minute', now(), Start)\r\n| where (PipelineName == \"pl_ingestion_landing_to_bronze\" and RunningMinutes > 15)\r\n    or (PipelineName == \"pl_silver_transformation_bronze_to_silver\" and RunningMinutes > 10)\r\n    or (PipelineName == \"pl_gold_transformation\" and RunningMinutes > 10)\r\n    or (PipelineName == \"master_pipeline\" and RunningMinutes > 40) ",
+                    "timeAggregation": "Count",
+                    "dimensions": [
+                        {
+                            "name": "PipelineName",
+                            "operator": "Include",
+                            "values": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "resourceIdColumn": "_ResourceId",
+                    "operator": "GreaterThan",
+                    "threshold": 0,
+                    "failingPeriods": {
+                        "numberOfEvaluationPeriods": 1,
+                        "minFailingPeriodsToAlert": 1
+                    }
+                }
+            ]
+        },
+        "autoMitigate": false,
+        "actions": {
+            "actionGroups": [
+                "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourcegroups/alwaha-banking-dev-rg/providers/microsoft.insights/actiongroups/ag-sla-alerts-adf"
+            ],
+            "customProperties": {}
+        }
+    }
+}

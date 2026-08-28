@@ -1,0 +1,30 @@
+{
+    "id": "/subscriptions/B3027A84-2C2A-46C1-858F-467A3DBD191A1/resourceGroups/alwaha-banking-dev-rg/providers/microsoft.insights/actionGroups/ag-sla-alerts-adf",
+    "type": "Microsoft.Insights/ActionGroups",
+    "name": "ag-sla-alerts-adf",
+    "location": "Global",
+    "kind": null,
+    "tags": null,
+    "properties": {
+        "groupShortName": "SLA-Alerts",
+        "enabled": true,
+        "emailReceivers": [
+            {
+                "name": "Mehran Ali_-EmailAction-",
+                "emailAddress": "mehran****@gmail.com",
+                "useCommonAlertSchema": false,
+                "status": "Enabled"
+            }
+        ],
+        "smsReceivers": [],
+        "webhookReceivers": [],
+        "eventHubReceivers": [],
+        "itsmReceivers": [],
+        "azureAppPushReceivers": [],
+        "automationRunbookReceivers": [],
+        "voiceReceivers": [],
+        "logicAppReceivers": [],
+        "azureFunctionReceivers": [],
+        "armRoleReceivers": []
+    }
+}

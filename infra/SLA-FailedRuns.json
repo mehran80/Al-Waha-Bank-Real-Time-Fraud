@@ -1,0 +1,50 @@
+{
+    "id": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourceGroups/alwaha-banking-dev-rg/providers/microsoft.insights/metricAlerts/SLA-FailedRuns",
+    "name": "SLA-FailedRuns",
+    "type": "Microsoft.Insights/metricAlerts",
+    "location": "global",
+    "tags": {},
+    "properties": {
+        "description": "",
+        "severity": 3,
+        "enabled": true,
+        "scopes": [
+            "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourceGroups/alwaha-banking-dev-rg/providers/Microsoft.DataFactory/factories/adf-alwaha-banking-dev-001"
+        ],
+        "evaluationFrequency": "PT10M",
+        "windowSize": "PT15M",
+        "criteria": {
+            "allOf": [
+                {
+                    "threshold": 0,
+                    "name": "Metric1",
+                    "metricNamespace": "Microsoft.DataFactory/factories",
+                    "metricName": "PipelineFailedRuns",
+                    "dimensions": [
+                        {
+                            "name": "Name",
+                            "operator": "Include",
+                            "values": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "operator": "GreaterThan",
+                    "timeAggregation": "Total",
+                    "skipMetricValidation": false,
+                    "criterionType": "StaticThresholdCriterion"
+                }
+            ],
+            "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+        },
+        "autoMitigate": true,
+        "targetResourceType": "Microsoft.DataFactory/factories",
+        "targetResourceRegion": "eastus",
+        "actions": [
+            {
+                "actionGroupId": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a11/resourcegroups/alwaha-banking-dev-rg/providers/microsoft.insights/actiongroups/ag-sla-alerts-adf",
+                "webHookProperties": {}
+            }
+        ]
+    }
+}
