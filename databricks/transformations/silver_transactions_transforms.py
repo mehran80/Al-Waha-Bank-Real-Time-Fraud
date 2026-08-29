@@ -1,4 +1,6 @@
-from pyspark import pipelines as dp
+import sys
+sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
+
 from pyspark.sql.window import Window
 from pyspark.sql.functions import (
     col,
@@ -23,19 +25,13 @@ from utilities.cleaning_helpers import (
    clean_formatted_account_id,
    clean_account_currency,
 )
-from utilities.expectations import TRANSACTION_EXPECTATIONS
 
 # ==============================================================================
 # 1. CLEANED TRANSACTIONS 
 # ==============================================================================
-@dp.temporary_view(
-    name = "cleaned_transactions"
-)
-def cleaned_transactions():
-    df = (
-        spark.read.table("alwaha_banking_dev_001.bronze.bronze_card_transactions")
-        .drop("_rescued_data")
-        )
+
+def transactions_cleaned(df):
+    df =df.drop("_rescued_data")
     df = df.withColumns({
         "transaction_id": clean_formatted_transaction_id("transaction_id"),
         "card_id": clean_formatted_card_id("card_id"),
@@ -63,23 +59,7 @@ def cleaned_transactions():
 # 2. VALIDATED TRANSACTIONS TABLE
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "validated_transactions"
-)
-def validated_transactions():
-    df = spark.read.table("cleaned_transactions")
-
-    customers = (
-        spark.read.table("alwaha_banking_dev_001.silver.silver_dim_customers")
-        .select("customer_id")
-        .dropDuplicates(["customer_id"])
-    )
-
-    accounts = (
-        spark.read.table("alwaha_banking_dev_001.silver.silver_dim_accounts")
-        .select("account_id")
-        .dropDuplicates(["account_id"])
-    )
+def transactions_validate(df, accounts, customers):
 
     df = (
         df.alias("t")
@@ -175,16 +155,10 @@ def validated_transactions():
     return df
 
 # ==============================================================================
-# 3. VALID TRANSACTION BATCH
+# 3. CLEANED VALID TRANSACTION BATCH
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "valid_transaction_batch"
-)
-
-@dp.expect_all(TRANSACTION_EXPECTATIONS)
-def valid_transaction_batch():
-    df = spark.read.table("validated_transactions")
+def get_cleaned_validated_transaction(df):
 
     df = (
         df
@@ -215,31 +189,10 @@ def valid_transaction_batch():
     return df
 
 # ==============================================================================
-# 4. SILVER TRANSACTIONS
+# 4. REJECTED / ORPHANS TRANSACTIONS
 # ==============================================================================
 
-dp.create_streaming_table(
-    name = "silver_transactions",
-    cluster_by_auto=True
-)
-
-dp.create_auto_cdc_from_snapshot_flow(
-    target = "silver_transactions",
-    source = "valid_transaction_batch",
-    keys = ["transaction_id"],
-    stored_as_scd_type = 1
-)
-    
-# ==============================================================================
-# 5. REJECTED / ORPHANS TRANSACTIONS
-# ==============================================================================
-
-@dp.materialized_view(
-    name = "rejected_transactions"
-)
-
-def rejected_transactions():
-    df = spark.read.table("validated_transactions")
+def get_rejected_transactions(df):
 
     df = (
         df

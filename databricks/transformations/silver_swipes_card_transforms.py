@@ -1,4 +1,6 @@
-from pyspark import pipelines as dp
+import sys
+sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
+
 from pyspark.sql.functions import (
     col,
     trim,
@@ -19,22 +21,14 @@ from utilities.cleaning_helpers import(
     clean_formatted_card_id,
     clean_account_currency
 )
-from utilities.expectations import SWIPES_CARD_EXPECTATIONS
 
 # ==============================================================================
 # 1. CLEANED CARD SWIPES
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "cleaned_card_swipes"
-)
+def swipes_card_cleaned(df):
 
-def cleaned_card_swipes():
-
-    df = (
-        spark.readStream.table("alwaha_banking_dev_001.bronze.stream_card_swipes")
-        .drop("_rescued_data")
-    )
+    df = df.drop("_rescued_data")
 
     df = df.withColumns({
         "account_id" : clean_formatted_account_id("account_id"),
@@ -62,25 +56,7 @@ def cleaned_card_swipes():
 # 2. Validated CARD SWIPES
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "validated_card_swipes"
-)
-
-def validated_card_swipes():
-
-    df = spark.readStream.table("cleaned_card_swipes")
-
-    customers = (
-        spark.read.table("alwaha_banking_dev_001.silver.silver_dim_customers")
-        .select("customer_id")
-        .dropDuplicates(["customer_id"])
-    )
-
-    accounts = (
-        spark.read.table("alwaha_banking_dev_001.silver.silver_dim_accounts")
-        .select("account_id")
-        .dropDuplicates(["account_id"])
-    )
+def swipes_card_validate(df, customers, accounts):
 
     df = (
         df.alias("s")
@@ -169,18 +145,7 @@ def validated_card_swipes():
 # 3. SILVER STREAMING CARD SWIPES
 # ==============================================================================
 
-dp.create_streaming_table(
-    name = "silver_card_swipes",
-    cluster_by_auto=True,
-    expect_all = SWIPES_CARD_EXPECTATIONS
-)
-
-@dp.append_flow(
-    target = "silver_card_swipes"
-)
-
-def append_valid_card_swipes():
-    df = spark.readStream.table("validated_card_swipes")
+def get_valid_swipes_card(df):
 
     df = (
         df
@@ -199,22 +164,24 @@ def append_valid_card_swipes():
         )
     )
     
-    df = df.withWatermark("swipe_timestamp", "24 hours").dropDuplicates(["swipe_id"])
     
     return df
+
 # ==============================================================================
-# 4. REJECTED / ORPHAN CARD SWIPES
+# 4. DEDUPLICATES VALID SWIPES
 # ==============================================================================
 
-dp.create_streaming_table(
-    name = "rejected_card_swipes"
-)
+def get_deduplicates_valid_swipes(df):
 
-@dp.append_flow(
-    target = "rejected_card_swipes"
-)
-def append_rejected_card_swipes():
-    df = spark.readStream.table("validated_card_swipes")
+    df = df.withWatermark("swipe_timestamp", "24 hours").dropDuplicates(["swipe_id"])
+
+    return df
+
+# ==============================================================================
+# 5. REJECTED / ORPHAN CARD SWIPES
+# ==============================================================================
+
+def get_rejected_swipes(df):
 
     df = (
         df

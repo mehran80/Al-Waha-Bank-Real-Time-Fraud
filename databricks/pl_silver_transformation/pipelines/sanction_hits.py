@@ -26,8 +26,9 @@ def silver_sanction_hits():
         .select(
             sha2(concat_ws("||", col("c.customer_id"), col("s.entry_id")), 256).alias("hit_id"),
             "c.customer_id",
+            "c.full_name"
             "s.entry_id",
-            "s.list_source",
+            "s.list_source"
             
         )
     )
