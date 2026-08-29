@@ -1,4 +1,3 @@
-from pyspark import pipelines as dp
 from pyspark.sql.functions  import(
     col,
     window,
@@ -8,20 +7,9 @@ from pyspark.sql.functions  import(
     size
 )
 
-# ==============================================================================
-# 1. GOLD VELOCITY ALERTS
-# ==============================================================================
-
-@dp.table(
-    name = "gold_velocity_alerts"
-)
-
-def gold_velocity_alerts():
-
-    swipes = spark.readStream.table("alwaha_banking_dev_001.silver.silver_card_swipes")
-
+def detect_velocity_alert(df):
     df = (
-        swipes
+        df
         .withWatermark("swipe_timestamp", "10 minutes")
         .groupBy(
             col("customer_id"),
@@ -45,5 +33,4 @@ def gold_velocity_alerts():
             current_timestamp().alias("alert_timestamp")
         )
     )
-
     return df
