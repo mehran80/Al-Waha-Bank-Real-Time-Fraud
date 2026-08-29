@@ -1,4 +1,6 @@
-from pyspark import pipelines as dp
+import sys
+sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
+
 from pyspark.sql.functions import(
     col,
     trim,
@@ -18,21 +20,14 @@ from pyspark.sql.functions import(
 from utilities.cleaning_helpers import (
     parse_mixed_date
 )
-from utilities.expectations import SANCTIONS_LIST_EXPECTATIONS
 
 # ==============================================================================
 # 1. CLEANED SANCTIONS LIST
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "cleaned_sanctions_list"
-)
+def sanctions_cleaned(df):
+    df = df.drop("_rescued_data")
 
-def cleaned_sanctions_list():
-    df = (
-        spark.read.table("alwaha_banking_dev_001.bronze.bronze_sanctions_list")
-        .drop("_rescued_data")
-    )
     df = df.withColumns({
         "aliases": array_distinct(
             transform(
@@ -58,12 +53,9 @@ def cleaned_sanctions_list():
 # ==============================================================================
 # 2. VALIDATED SANCTIONS LIST
 # ==============================================================================
-@dp.temporary_view(
-    name = "validated_sanctions_list"
-)
 
-def validated_sanctions_list():
-    df = spark.read.table("cleaned_sanctions_list")
+def sanctions_validate(df):
+
     df = (
         df.withColumn(
             "rejected_reasons",
@@ -101,13 +93,8 @@ def validated_sanctions_list():
 # ==============================================================================
 # 3. SILVER SANCTIONS LIST
 # ==============================================================================
-@dp.materialized_view(
-    name = "silver_sanctions_list"
-)
 
-@dp.expect_all(SANCTIONS_LIST_EXPECTATIONS)
-def silver_sanctions_list():
-    df = spark.read.table("validated_sanctions_list")
+def get_validated_sanctions(df):
     df = (
         df
         .filter(
@@ -121,12 +108,8 @@ def silver_sanctions_list():
 # 4. REJECTED SANCTIONS LIST
 # ==============================================================================
 
-@dp.materialized_view(
-    name = "rejected_sanctions_list"
-)
-
-def rejected_sanctions_list():
-    df = spark.read.table("validated_sanctions_list")
+def get_rejected_sanctions(df):
+    
     df = (
         df
         .filter(

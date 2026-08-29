@@ -1,4 +1,6 @@
-from pyspark import pipelines as dp
+import sys
+sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
+
 from pyspark.sql.window import Window
 from pyspark.sql.functions import (
     col,
@@ -21,21 +23,13 @@ from utilities.cleaning_helpers import (
     clean_account_type,
     clean_account_status
 )
-from utilities.expectations import ACCOUNT_EXPECTATIONS
 
 # ==============================================================================
-# 1. CLEAN ACCOUNTS
+# 1. ACCOUNTS CLEANED
 # ==============================================================================
-@dp.temporary_view(
-    name = "accounts_cleaned"
-)
-def accounts_cleaned():
-    df =(
-        spark.read.table(
-            "alwaha_banking_dev_001.bronze.bronze_core_accounts"
-            )
-            .drop("_rescued_data")
-        )
+
+def cleaned_accounts(df):
+    df =df.drop("_rescued_data")
     df = df.withColumns({
         "account_id": clean_formatted_account_id("account_id"),
         "customer_id": clean_formatted_customer_id("customer_id"),
@@ -50,23 +44,13 @@ def accounts_cleaned():
         })
     return df
 
-
 # ==============================================================================
-# 2.VALIDATED ACCOUNTS
+# 2. VALIDATED ACCOUNTS
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "validated_accounts"
-)
-def validated_accounts():
-    df = (
-        spark.read.table("accounts_cleaned")
-    )
-    customers = (
-        spark.read.table("alwaha_banking_dev_001.silver.silver_dim_customers")
-        .select("customer_id")
-        .dropDuplicates(["customer_id"])
-        )
+def accounts_validate(df, df_customers):
+    
+    customers = df_customers.select("customer_id").dropDuplicates(["customer_id"])
     
     df = (
         df.alias("a")
@@ -74,13 +58,12 @@ def validated_accounts():
             customers.alias("c"),
             col("a.customer_id") == col("c.customer_id"),
             "left"
-            )
-        .select
-        (
+        )
+        .select(
             "a.*",
             col("c.customer_id").alias("_matched_customer_id")
         )
-        )
+    )
     df = df.withColumn(
         "rejected_reasons",
         array(
@@ -145,17 +128,10 @@ def validated_accounts():
     return df
 
 # ==============================================================================
-# 3. CLEAN VALIDATED ACCOUNTS
+# 3. GET CLEAN VALIDATED ACCOUNTS
 # ==============================================================================
 
-@dp.temporary_view(
-    name = "clean_validated_accounts"
-)
-
-@dp.expect_all(ACCOUNT_EXPECTATIONS)
-
-def clean_validated_accounts():
-    df = spark.read.table("validated_accounts")
+def get_clean_validated_accounts(df):
     
     df = (
         df
@@ -185,31 +161,10 @@ def clean_validated_accounts():
     return df
 
 # ==============================================================================
-# 4. SCD TYPE 2 ACCOUNTS
+# 4. GET REJECTED ACCOUNTS
 # ==============================================================================
 
-dp.create_streaming_table(
-    name = "silver_dim_accounts",
-    comment = "Accounts dimension maintained as a SCD TYPE 2 using snapshot flow",
-    cluster_by_auto=True
-)
-
-dp.create_auto_cdc_from_snapshot_flow(
-    target = "silver_dim_accounts",
-    source = "clean_validated_accounts",
-    keys = ["account_id"],
-    stored_as_scd_type = 2
-)
-
-# ==============================================================================
-# 5. REJECTED / ORPHAN ACCOUNTS
-# ==============================================================================
-
-@dp.materialized_view(
-    name = "rejected_accounts"
-)
-def rejected_accounts():
-    df = spark.read.table("validated_accounts")
+def rejected_accounts(df):
     
     df = (
         df
