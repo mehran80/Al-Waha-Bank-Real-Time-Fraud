@@ -197,12 +197,13 @@ resource "databricks_mws_permission_assignment" "pipeline_service_to_workspace" 
 #-------------------------------------------------
 
 data "databricks_user" "ali_baloch" {
-
+    provider = databricks.account
     user_name = "mehran8023@gmail.com"
   
 }
 
 data "databricks_service_principal" "adf_alwaha_service_principal" {
+    provider = databricks.account
     application_id = "5c696b18-3112-42e5-95d4-9294ac7b22d3"
   
 }
