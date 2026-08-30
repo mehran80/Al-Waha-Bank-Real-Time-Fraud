@@ -68,16 +68,16 @@ jobs:
       - name: Create Terraform.tfvars
         working-directory: ./alwaha-ias-terraform
         run: |
-          cat> terraofrm.tfvars <<EOF
+          cat> terraform.tfvars <<EOF
           project_name = "Al-Waha-Bank-Real-Time-Fraud"
           environment = ["dev"]
           location = "East US"
           subscription_id = "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           databricks_account_id = "${{ secrets.DATABRICKS_ACCOUNT_ID }}"
-          azure_tenant_id = "${{ secrets. AZURE_TENANT_ID }}"
+          azure_tenant_id = "${{ secrets.AZURE_TENANT_ID }}"
           tags = {
             project = "AlWaha-banking",
-            Environment = "development"
+            Environment = "development",
             ManagedBy = "Terraform",
             Domain = "Fraud-AML"
           }
@@ -90,6 +90,9 @@ jobs:
       - name: Terraform Plan
         working-directory: ./alwaha-ias-terraform
         run: terraform plan
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
       - name: Terraform Apply
         working-directory: ./alwaha-ias-terraform
