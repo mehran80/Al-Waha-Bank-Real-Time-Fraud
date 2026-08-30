@@ -1,0 +1,90 @@
+name: Deploy to Dev
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test-and-plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chekout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run pytest
+        run: pytest tests/ -v
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform init
+        working-directory: ./alwaha-ias-terraform
+        run: terraform init
+
+      - name: Terraform plan
+        working-directory: ./alwaha-ias-terraform
+        run: terraform plan
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        working-directory: ./alwaha-ias-terraform
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ./alwaha-ias-terraform
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: ./alwaha-ias-terraform
+        run: terraform apply -auto-approve
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: Install Databricks CLI
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+      - name: Deploy Databricks Bundle to Dev
+        run: databricks bundle deploy --target dev
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN}}
