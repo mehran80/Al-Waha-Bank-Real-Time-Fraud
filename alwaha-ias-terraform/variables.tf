@@ -33,3 +33,20 @@ variable "azure_tenant_id" {
   description = "tenant id"
   
 }
+
+variable "azure_client_id" {
+  description = "Azure Service Principal Client ID"
+  type        = string
+}
+
+variable "azure_client_secret" {
+  description = "Azure Service Principal Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "databricks_token" {
+  description = "Databricks Personal Access Token"
+  type        = string
+  sensitive   = true
+}

@@ -115,14 +115,17 @@ resource "azurerm_databricks_workspace" "db_ws" {
 #-------------------------------------------------
 
 provider "databricks" {
-    host = azurerm_databricks_workspace.db_ws.workspace_url
+    host  = azurerm_databricks_workspace.db_ws.workspace_url
+    token = var.databricks_token
 }
 
 provider "databricks" {
-    alias = "account"
-    host = "https://accounts.azuredatabricks.net"
-    account_id = var.databricks_account_id
+    alias           = "account"
+    host            = "https://accounts.azuredatabricks.net"
+    account_id      = var.databricks_account_id
     azure_tenant_id = data.azurerm_client_config.current.tenant_id
+    azure_client_id     = var.azure_client_id
+    azure_client_secret = var.azure_client_secret
 }
 
 
