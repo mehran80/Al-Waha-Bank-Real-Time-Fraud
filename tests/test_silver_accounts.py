@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 from transformations.silver_accounts_transforms import (
     accounts_validate, get_clean_validated_accounts, get_rejected_accounts
 )
