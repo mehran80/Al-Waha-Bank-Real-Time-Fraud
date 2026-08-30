@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
 
 from datetime import datetime, timedelta
 from transformations.gold_velocity_alerts_transforms import detect_velocity_alerts

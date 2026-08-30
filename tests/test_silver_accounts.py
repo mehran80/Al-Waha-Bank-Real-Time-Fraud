@@ -1,12 +1,10 @@
-import sys
-sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
 
 from datetime import datetime, timedelta
 from transformations.silver_accounts_transforms import (
     accounts_validate, get_clean_validated_accounts, get_rejected_accounts
 )
 
-def valid_account_has_no rejection(spark):
+def valid_account_has_no_rejection(spark):
     accounts = spark.createDataFrame([
         ("ACC1234567", "CUST123456", "SAVINGS", "ACTIVE", "AED",
          date(2023, 1, 1), "RUN001", "2023-01-01T00:00:00", "file1.csv")

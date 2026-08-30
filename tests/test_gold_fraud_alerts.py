@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
 
 from transformations.gold_fraud_alerts_transforms import (
     join_swipes_with_customer_risk, calculate_fraud_score
