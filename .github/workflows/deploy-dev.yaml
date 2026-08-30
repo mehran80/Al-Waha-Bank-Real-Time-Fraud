@@ -83,7 +83,7 @@ jobs:
       - name: Create Terraform.tfvars
         working-directory: ./alwaha-ias-terraform
         run: |
-          cat> terraform.tfvars <<EOF
+          cat > terraform.tfvars <<EOF
           project_name = "alwaha"
           environment = ["dev"]
           location = "East US"
