@@ -117,6 +117,9 @@ resource "azurerm_databricks_workspace" "db_ws" {
 provider "databricks" {
     host  = azurerm_databricks_workspace.db_ws.workspace_url
     token = var.databricks_token
+    azure_client_id     = null
+    azure_client_secret = null
+    azure_tenant_id     = null
 }
 
 provider "databricks" {
@@ -134,25 +137,25 @@ provider "databricks" {
 #-------------------------------------------------
 
 resource "databricks_group" "analyst" {
-    provider = databricks.account
+  
     display_name = "analyst"
   
 }
 
 resource "databricks_group" "compliance_officer" {
-    provider = databricks.account
+   
     display_name = "compliance_officer"
   
 }
 
 resource "databricks_group" "data_engineers" {
-    provider =  databricks.account
+   
     display_name =  "data_engineers"
   
 }
 
 resource "databricks_group" "pipeline_service" {
-    provider = databricks.account
+   
     display_name = "pipeline_service"
   
 }
@@ -161,36 +164,36 @@ resource "databricks_group" "pipeline_service" {
 # DATABRICKS MWS PERMISSION ASSIGNMENT
 #-------------------------------------------------
 
-resource "databricks_mws_permission_assignment" "analyst_to_workspace" {
-    provider = databricks.account
-    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
-    principal_id = databricks_group.analyst.id
-    permissions = ["USER"]
+# resource "databricks_mws_permission_assignment" "analyst_to_workspace" {
+#     provider = databricks.account
+#     workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+#     principal_id = databricks_group.analyst.id
+#     permissions = ["USER"]
   
-}
+# }
 
-resource "databricks_mws_permission_assignment" "compliance_to_workspace" {
-    provider = databricks.account
-    workspace_id =  azurerm_databricks_workspace.db_ws.workspace_id
-    principal_id = databricks_group.compliance_officer.id
-    permissions = ["USER"]
+# resource "databricks_mws_permission_assignment" "compliance_to_workspace" {
+#     provider = databricks.account
+#     workspace_id =  azurerm_databricks_workspace.db_ws.workspace_id
+#     principal_id = databricks_group.compliance_officer.id
+#     permissions = ["USER"]
   
-}
+# }
 
-resource "databricks_mws_permission_assignment" "data_engineers_to_workspace" {
-    provider = databricks.account
-    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
-    principal_id = databricks_group.data_engineers.id
-    permissions = ["USER"]
-}
+# resource "databricks_mws_permission_assignment" "data_engineers_to_workspace" {
+#     provider = databricks.account
+#     workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+#     principal_id = databricks_group.data_engineers.id
+#     permissions = ["USER"]
+# }
 
-resource "databricks_mws_permission_assignment" "pipeline_service_to_workspace" {
-    provider = databricks.account
-    workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
-    principal_id =  databricks_group.pipeline_service.id
-    permissions = ["USER"]
+# resource "databricks_mws_permission_assignment" "pipeline_service_to_workspace" {
+#     provider = databricks.account
+#     workspace_id = azurerm_databricks_workspace.db_ws.workspace_id
+#     principal_id =  databricks_group.pipeline_service.id
+#     permissions = ["USER"]
   
-}
+# }
 
 #-------------------------------------------------
 # ADDING USERS IN GROUPS
@@ -208,18 +211,18 @@ data "databricks_service_principal" "adf_alwaha_service_principal" {
 
 
 
-resource "databricks_group_member" "ali_in_engineers" {
-    provider = databricks.account
-    group_id = databricks_group.data_engineers.id
-    member_id = data.databricks_user.ali_baloch.id
+# resource "databricks_group_member" "ali_in_engineers" {
+#     provider = databricks.account
+#     group_id = databricks_group.data_engineers.id
+#     member_id = data.databricks_user.ali_baloch.id
   
-}
+# }
 
-resource "databricks_group_member" "adf_in_pipeline" {
-    provider = databricks.account
-    group_id = databricks_group.pipeline_service.id
-    member_id = data.databricks_service_principal.adf_alwaha_service_principal.id
-}
+# resource "databricks_group_member" "adf_in_pipeline" {
+#     provider = databricks.account
+#     group_id = databricks_group.pipeline_service.id
+#     member_id = data.databricks_service_principal.adf_alwaha_service_principal.id
+# }
 
 
 
