@@ -57,10 +57,10 @@ jobs:
         working-directory: ./alwaha-ias-terraform
         run: terraform init
         env:
-          subscription_id = "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-          azure_tenant_id = "${{ secrets.AZURE_TENANT_ID }}"
-          azure_client_id = "${{ secrets.AZURE_APP_ID }}"
-          azure_client_secret = "${{ secrets.AZURE_APP_PASSWORD }}"
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_CLIENT_ID: ${{ secrets.AZURE_APP_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_APP_PASSWORD }}
 
       - name: Terraform plan
         working-directory: ./alwaha-ias-terraform
@@ -117,10 +117,10 @@ jobs:
         working-directory: ./alwaha-ias-terraform
         run: terraform init
         env:
-          subscription_id = "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-          azure_tenant_id = "${{ secrets.AZURE_TENANT_ID }}"
-          azure_client_id = "${{ secrets.AZURE_APP_ID }}"
-          azure_client_secret = "${{ secrets.AZURE_APP_PASSWORD }}"
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_CLIENT_ID: ${{ secrets.AZURE_APP_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_APP_PASSWORD }}
 
       - name: Terraform Plan
         working-directory: ./alwaha-ias-terraform
