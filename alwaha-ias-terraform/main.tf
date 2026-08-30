@@ -197,7 +197,6 @@ resource "databricks_mws_permission_assignment" "pipeline_service_to_workspace" 
 #-------------------------------------------------
 
 data "databricks_user" "ali_baloch" {
-    provider = databricks.account
     user_name = "mehran8023@gmail.com"
   
 }
