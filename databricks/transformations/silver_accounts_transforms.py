@@ -164,7 +164,7 @@ def get_clean_validated_accounts(df):
 # 4. GET REJECTED ACCOUNTS
 # ==============================================================================
 
-def rejected_accounts(df):
+def get_rejected_accounts(df):
     
     df = (
         df
