@@ -42,6 +42,9 @@ jobs:
           subscription_id = "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           databricks_account_id = "${{ secrets.DATABRICKS_ACCOUNT_ID }}"
           azure_tenant_id = "${{ secrets.AZURE_TENANT_ID }}"
+          databricks_token = "${{ secrets.DATABRICKS_TOKEN }}"
+          azure_client_id = "${{ secrets.AZURE_APP_ID }}"
+          azure_client_secret = "${{ secrets.AZURE_APP_PASSWORD }}"
           tags = {
             project = "AlWaha-banking",
             Environment = "development",
