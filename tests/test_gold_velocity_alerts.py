@@ -10,7 +10,7 @@ def test_multiple_cities_in_window_triggers_alert(spark):
     ]
     df = spark.createDataFrame(data, ["customer_id", "city", "swipe_timestamp"])
 
-    result = detect_velocity_alerts(df)
+    result = detect_velocity_alert(df)
     rows = result.collect()
 
     assert len(rows) == 1
