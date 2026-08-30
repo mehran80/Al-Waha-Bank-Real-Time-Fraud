@@ -101,6 +101,10 @@ jobs:
           }
           EOF
 
+      - name: Debug - Show tfvars file
+        working-directory: ./alwaha-ias-terraform
+        run: cat terraform.tfvars
+
       - name: Terraform Init
         working-directory: ./alwaha-ias-terraform
         run: terraform init
