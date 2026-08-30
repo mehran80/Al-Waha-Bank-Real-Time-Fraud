@@ -36,7 +36,7 @@ jobs:
         working-directory: ./alwaha-ias-terraform
         run: |
           cat> terraform.tfvars <<EOF
-          project_name = "Al-Waha-Bank-Real-Time-Fraud"
+          project_name = "alwaha-banking"
           environment = ["dev"]
           location = "East US"
           subscription_id = "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
