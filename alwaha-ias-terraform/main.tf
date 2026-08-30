@@ -202,7 +202,6 @@ data "databricks_user" "ali_baloch" {
 }
 
 data "databricks_service_principal" "adf_alwaha_service_principal" {
-    provider = databricks.account
     application_id = "5c696b18-3112-42e5-95d4-9294ac7b22d3"
   
 }
