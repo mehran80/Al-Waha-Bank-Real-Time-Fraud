@@ -1,6 +1,6 @@
 
 from datetime import datetime, timedelta
-from transformations.gold_velocity_alerts_transforms import detect_velocity_alerts
+from transformations.gold_velocity_alerts_transforms import detect_velocity_alert
 
 def test_multiple_cities_in_window_triggers_alert(spark):
     base_time = datetime(2024, 1, 1, 10, 0, 0)
@@ -10,7 +10,7 @@ def test_multiple_cities_in_window_triggers_alert(spark):
     ]
     df = spark.createDataFrame(data, ["customer_id", "city", "swipe_timestamp"])
 
-    result = detect_velocity_alerts(df)
+    result = detect_velocity_alert(df)
     rows = result.collect()
 
     assert len(rows) == 1
@@ -26,7 +26,7 @@ def test_single_city_does_not_trigger_alert(spark):
     ]
     df = spark.createDataFrame(data, ["customer_id", "city", "swipe_timestamp"])
 
-    result = detect_velocity_alerts(df)
+    result = detect_velocity_alert(df)
     assert result.count() == 0
 
 
@@ -38,6 +38,6 @@ def test_swipes_outside_window_not_grouped_together(spark):
     ]
     df = spark.createDataFrame(data, ["customer_id", "city", "swipe_timestamp"])
 
-    result = detect_velocity_alerts(df)
+    result = detect_velocity_alert(df)
     # Alag windows mein aa jayenge, koi bhi window mein 2 cities nahi honge
     assert result.count() == 0
