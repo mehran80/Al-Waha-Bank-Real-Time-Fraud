@@ -12,13 +12,13 @@ resources:
             health:
                 rules:
                     - metric: RUN_DURATION_SECONDS
-                        op: GREATER_THAN
-                        value: 600
+                      op: GREATER_THAN
+                      value: 600
 
             email_notifications:
                 on_failure:
                     - mehran8023@gmail.com
-                on_duration_warning_exceeded_threshold:
+                on_duration_warning_threshold_exceeded:
                     - mehran8023@gmail.com
             
             notification_settings:

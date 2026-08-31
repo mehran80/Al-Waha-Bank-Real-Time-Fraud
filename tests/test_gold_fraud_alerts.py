@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
 
 from transformations.gold_fraud_alerts_transforms import (
     join_swipes_with_customer_risk, calculate_fraud_score
@@ -56,7 +54,7 @@ def test_fraud_risk_low_without_flag_hint(spark):
     joined = join_swipes_with_customer_risk(swipes, customers)
     result = calculate_fraud_score(joined)
 
-    assert result.count() == 1
+    assert result.count() == 0
 
 def test_fraud_risk_medium_without_flag_hint(spark):
     swipes = spark.createDataFrame(

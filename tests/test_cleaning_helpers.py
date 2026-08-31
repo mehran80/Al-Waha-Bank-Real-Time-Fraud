@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Workspace/Users/mehran8023@gmail.com/Al-Waha-Bank-Real-Time-Fraud/databricks")
 
 from utilities.cleaning_helpers import clean_account_currency, clean_formatted_account_id
 
