@@ -1,20 +1,14 @@
 {
 	"name": "ls_adb",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
+		"annotations": [],
 		"type": "AzureDatabricks",
 		"typeProperties": {
-			"accessToken": null,
-			"authentication": "MSI",
 			"domain": "https://adb-7405606577107559.19.azuredatabricks.net",
-			"newClusterDriverNodeType": "",
-			"newClusterInitScripts": [],
-			"newClusterLogDestination": "",
-			"newClusterNodeType": "Standard_DS3_v2",
-			"newClusterNumOfWorker": "1",
-			"newClusterVersion": "14.3.x-scala2.12",
-			"workspaceResourceId": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a1/resourceGroups/alwaha-banking-dev-rg/providers/Microsoft.Databricks/workspaces/dbw-alwaha-banking-dev-001"
-		},
-		"annotations": []
-	}
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a1/resourceGroups/alwaha-banking-dev-rg/providers/Microsoft.Databricks/workspaces/dbw-alwaha-banking-dev-001",
+			"existingClusterId": "0811-220759-r82ayppe"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
