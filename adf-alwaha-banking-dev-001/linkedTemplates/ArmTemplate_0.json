@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-alwaha-banking-dev-001"
 		},
+		"ls_adb_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0811-220759-r82ayppe"
+		},
 		"ls_adls_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://alwahabankingdev001.dfs.core.windows.net/"
@@ -31,13 +35,7 @@
 					"domain": "https://adb-7405606577107559.19.azuredatabricks.net",
 					"authentication": "MSI",
 					"workspaceResourceId": "/subscriptions/b3027a84-2c2a-46c1-858f-467a3dbd19a1/resourceGroups/alwaha-banking-dev-rg/providers/Microsoft.Databricks/workspaces/dbw-alwaha-banking-dev-001",
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "1",
-					"newClusterVersion": "14.3.x-scala2.12",
-					"newClusterLogDestination": "",
-					"newClusterDriverNodeType": "",
-					"clusterOption": "Fixed",
-					"newClusterInitScripts": []
+					"existingClusterId": "[parameters('ls_adb_properties_typeProperties_existingClusterId')]"
 				}
 			},
 			"dependsOn": []

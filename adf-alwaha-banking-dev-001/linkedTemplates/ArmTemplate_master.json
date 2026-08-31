@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-alwaha-banking-dev-001"
 		},
+		"ls_adb_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0811-220759-r82ayppe"
+		},
 		"ls_adls_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://alwahabankingdev001.dfs.core.windows.net/"
@@ -41,6 +45,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ls_adb_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('ls_adb_properties_typeProperties_existingClusterId')]"
 					},
 					"ls_adls_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls_properties_typeProperties_url')]"

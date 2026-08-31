@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "adf-alwaha-banking-dev-001"
 		},
+		"ls_adb_properties_typeProperties_existingClusterId": {
+			"value": "0811-220759-r82ayppe"
+		},
 		"ls_adls_properties_typeProperties_url": {
 			"value": "https://alwahabankingdev001.dfs.core.windows.net/"
 		},
