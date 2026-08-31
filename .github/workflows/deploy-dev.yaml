@@ -66,6 +66,11 @@ jobs:
       - name: Terraform plan
         working-directory: ./alwaha-ias-terraform
         run: terraform plan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_APP_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_APP_PASSWORD }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
   deploy-dev:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -119,10 +124,20 @@ jobs:
       - name: Terraform Plan
         working-directory: ./alwaha-ias-terraform
         run: terraform plan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_APP_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_APP_PASSWORD }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Terraform Apply
         working-directory: ./alwaha-ias-terraform
         run: terraform apply -auto-approve
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_APP_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_APP_PASSWORD }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Install Databricks CLI
         run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
