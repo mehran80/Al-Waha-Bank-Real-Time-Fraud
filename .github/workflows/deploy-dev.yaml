@@ -11,7 +11,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Chekout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-      
+
       - name: Run pytest
         run: python -m pytest tests/ -v
 
@@ -32,10 +32,10 @@ jobs:
         with:
           terraform_version: "1.7.0"
 
-      - name: Create Terraform.tfvars
+      - name: Create terraform.tfvars
         working-directory: ./alwaha-ias-terraform
         run: |
-          cat> terraform.tfvars <<EOF
+          cat > terraform.tfvars <<EOF
           project_name = "alwaha-banking"
           environment = ["dev"]
           location = "East US"
@@ -52,6 +52,10 @@ jobs:
             Domain = "Fraud-AML"
           }
           EOF
+
+      - name: Debug - Show tfvars file
+        working-directory: ./alwaha-ias-terraform
+        run: cat terraform.tfvars
 
       - name: Terraform init
         working-directory: ./alwaha-ias-terraform
@@ -79,13 +83,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-      
-      - name: Set up Terraform
+
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
 
-      - name: Create Terraform.tfvars
+      - name: Create terraform.tfvars
         working-directory: ./alwaha-ias-terraform
         run: |
           cat > terraform.tfvars <<EOF
@@ -99,16 +103,12 @@ jobs:
           azure_client_id = "${{ secrets.AZURE_APP_ID }}"
           azure_client_secret = "${{ secrets.AZURE_APP_PASSWORD }}"
           tags = {
-            project = "ALWaha-Banking",
+            project = "AlWaha-banking",
             Environment = "development",
             ManagedBy = "Terraform",
             Domain = "Fraud-AML"
           }
           EOF
-
-      - name: Debug - Show tfvars file
-        working-directory: ./alwaha-ias-terraform
-        run: cat terraform.tfvars
 
       - name: Terraform Init
         working-directory: ./alwaha-ias-terraform
@@ -131,4 +131,4 @@ jobs:
         run: databricks bundle deploy --target dev
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN}}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

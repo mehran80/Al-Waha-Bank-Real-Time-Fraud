@@ -117,9 +117,6 @@ resource "azurerm_databricks_workspace" "db_ws" {
 provider "databricks" {
     host  = azurerm_databricks_workspace.db_ws.workspace_url
     token = var.databricks_token
-    azure_client_id     = null
-    azure_client_secret = null
-    azure_tenant_id     = null
 }
 
 provider "databricks" {
