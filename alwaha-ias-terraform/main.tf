@@ -376,16 +376,11 @@ resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "ls_adls"{
 }
 
 #3. LINKED SERVICE FOR AZURE DATABRICKS
-resource "azurerm_data_factory_linked_service_azure_databricks" "ls_adb"{
-    name = "ls_adb"
-    data_factory_id = azurerm_data_factory.adf.id
-    adb_domain = "https://${azurerm_databricks_workspace.db_ws.workspace_url}"
+resource "azurerm_data_factory_linked_service_azure_databricks" "ls_adb" {
+    name             = "ls_adb"
+    data_factory_id  = azurerm_data_factory.adf.id
+    adb_domain       = "https://${azurerm_databricks_workspace.db_ws.workspace_url}"
     msi_work_space_resource_id = azurerm_databricks_workspace.db_ws.id
 
-    new_cluster_config {
-      node_type = "Standard_DS3_v2"
-      cluster_version = "14.3.x-scala2.12"
-      min_number_of_workers = 1
-      max_number_of_workers = 1
-    }
+    existing_cluster_id = "0811-220759-r82ayppe"
 }
