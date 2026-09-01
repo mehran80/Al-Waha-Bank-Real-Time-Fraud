@@ -1,4 +1,4 @@
-# Al-Waha-Bank-Real-Time-Fraud# Al-Waha Bank — Real-Time Fraud Detection Platform
+# Al-Waha Bank — Real-Time Fraud Detection Platform
 
 A production-style, end-to-end data engineering platform that ingests banking data, transforms it through a Medallion architecture, and detects fraud and sanctions-list violations in near real time — fully automated with Infrastructure as Code and CI/CD.
 
@@ -115,20 +115,28 @@ Each Silver-layer table applies **row-level validation** (ID format checks via r
 
 ```
 Al-Waha-Bank-Real-Time-Fraud/
-├── .github/workflows/          # CI/CD pipeline (GitHub Actions)
-├── alwaha-ias-terraform/       # Terraform IaC (Azure + Databricks resources)
-├── dab/                        # Databricks Asset Bundle (databricks.yml + resources)
-│   └── databricks/
-│       ├── bronze/             # Ingestion notebooks (batch + streaming)
-│       ├── pl_silver_transformation/   # Silver DLT pipeline
-│       ├── pl_gold_transformation/     # Gold DLT pipeline (fraud, velocity, sanctions)
-│       ├── transformations/    # Pure, unit-testable transformation logic
-│       └── utilities/          # Shared cleaning helpers & DLT expectations
-├── tests/                      # Pytest suite (one file per domain/table)
+├── .github/workflows/           # CI/CD pipeline (GitHub Actions — deploy-dev.yaml)
+├── alwaha-ias-terraform/        # Terraform IaC (Azure + Databricks resources)
+├── databricks/                  # All Databricks source code
+│   ├── bronze/                  # Ingestion notebooks (batch + streaming)
+│   ├── pl_silver_transformation/    # Silver DLT pipeline
+│   ├── pl_gold_transformation/      # Gold DLT pipeline (fraud, velocity, sanctions)
+│   ├── transformations/         # Pure, unit-testable transformation logic
+│   └── utilities/               # Shared cleaning helpers & DLT expectations
+├── dab/                         # Databricks Asset Bundle config (databricks.yml + resources)
+├── adf/                         # Azure Data Factory source (Git-integrated ADF project)
+│   ├── dataset/                 # ADF dataset definitions
+│   ├── linkedService/           # ADF linked services (Databricks, ADLS, Key Vault)
+│   ├── pipeline/                 # ADF orchestration pipelines
+│   ├── factory/                  # ADF factory-level settings
+│   └── infra/                    # SLA-based alert configuration
+├── tests/                       # Pytest suite (one file per domain/table)
 └── requirements.txt
 ```
 
 Business logic is deliberately kept out of the DLT pipeline files and factored into standalone `transformations/` functions — this is what makes every rule (each validation, each fraud score branch, each rejection reason) independently unit-testable with `pytest`, without needing a live Databricks cluster.
+
+Two orchestration/provisioning systems are used side by side, intentionally: **Terraform** owns core infrastructure (storage, compute, security, and select ADF resources such as the Databricks linked service), while the bulk of the **ADF pipelines, datasets, and SLA alerts** are authored through the ADF UI and version-controlled via ADF's own Git integration (`adf/` folder, published via the `adf_publish` branch).
 
 ---
 
@@ -167,4 +175,4 @@ Currently deployed and fully automated against a **development environment** (`a
 
 ## Author
 
-Built and engineered end-to-end by **Mehran ALI**.
+Built and engineered end-to-end by **Mehran Ali**.
